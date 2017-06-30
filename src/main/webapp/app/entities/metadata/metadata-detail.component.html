@@ -1,0 +1,41 @@
+
+<div *ngIf="metadata">
+    <h2><span>Metadata</span> {{metadata.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span>Original Value</span></dt>
+        <dd>
+            <span>{{metadata.originalValue}}</span>
+        </dd>
+        <dt><span>Verified Value</span></dt>
+        <dd>
+            <span>{{metadata.verifiedValue}}</span>
+        </dd>
+        <dt><span>Metadata Type</span></dt>
+        <dd>
+            <div *ngIf="metadata.metadataType">
+                <a [routerLink]="['/metadata-type', metadata.metadataType?.id]">{{metadata.metadataType?.id}}</a>
+            </div>
+        </dd>
+        <dt><span>Document</span></dt>
+        <dd>
+            <div *ngIf="metadata.document">
+                <a [routerLink]="['/document', metadata.document?.id]">{{metadata.document?.id}}</a>
+            </div>
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'metadata/'+ metadata.id + '/edit'} }]"
+            replaceUrl="true"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span> Edit</span>
+    </button>
+</div>

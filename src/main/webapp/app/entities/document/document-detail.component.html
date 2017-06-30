@@ -1,0 +1,36 @@
+
+<div *ngIf="document">
+    <h2><span>Document</span> {{document.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span>Document Bytes</span></dt>
+        <dd>
+            <div *ngIf="document.documentBytes">
+                <a (click)="openFile(document.documentContentType, document.documentBytes)">open</a>
+                {{document.documentContentType}}, {{byteSize(document.documentBytes)}}
+            </div>
+        </dd>
+        <dt><span>Extraction Status</span></dt>
+        <dd>
+            <span>{{document.extractionStatus}}</span>
+        </dd>
+        <dt><span>User</span></dt>
+        <dd>
+            {{document.user?.id}}
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'document/'+ document.id + '/edit'} }]"
+            replaceUrl="true"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span> Edit</span>
+    </button>
+</div>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="zeeshan (generated)" id="1498810447819-1">
+      <addColumn tableName="document">
+         <column name="created_date" type="tinyblob">
+            <constraints nullable="false"/>
+         </column>
+      </addColumn>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-2">
+      <addColumn tableName="metadata">
+         <column name="created_date" type="tinyblob">
+            <constraints nullable="false"/>
+         </column>
+      </addColumn>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-3">
+      <addColumn tableName="document">
+         <column name="last_modified_by" type="varchar(50)"/>
+      </addColumn>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-4">
+      <addColumn tableName="metadata">
+         <column name="last_modified_by" type="varchar(50)"/>
+      </addColumn>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-5">
+      <addColumn tableName="document">
+         <column name="last_modified_date" type="tinyblob"/>
+      </addColumn>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-6">
+      <addColumn tableName="metadata">
+         <column name="last_modified_date" type="tinyblob"/>
+      </addColumn>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-7">
+      <dropColumn columnName="creation_date" tableName="document"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-8">
+      <dropColumn columnName="creation_date" tableName="metadata"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-9">
+      <dropColumn columnName="updated_by" tableName="document"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-10">
+      <dropColumn columnName="updated_by" tableName="metadata"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-11">
+      <dropColumn columnName="updation_date" tableName="document"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-12">
+      <dropColumn columnName="updation_date" tableName="metadata"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-13">
+      <addNotNullConstraint columnDataType="varchar(50)"
+                            columnName="created_by"
+                            tableName="document"/>
+   </changeSet>
+   <changeSet author="zeeshan (generated)" id="1498810447819-14">
+      <addNotNullConstraint columnDataType="varchar(50)"
+                            columnName="created_by"
+                            tableName="metadata"/>
+   </changeSet>
+</databaseChangeLog>

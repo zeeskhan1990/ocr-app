@@ -1,0 +1,65 @@
+<div>
+    <h2>
+        <span>Documents</span>
+        <button class="btn btn-primary float-right create-document" [routerLink]="['/', { outlets: { popup: ['document-new'] } }]">
+            <span class="fa fa-plus"></span>
+            <span >
+            Create new Document
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <div class="row">
+    </div>
+    <br/>
+    <div class="table-responsive" *ngIf="documents">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+            <th><span>ID</span></th>
+            <th><span>Document Bytes</span></th>
+            <th><span>Extraction Status</span></th>
+            <th><span>User</span></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let document of documents ;trackBy: trackId">
+                <td><a [routerLink]="['../document', document.id ]">{{document.id}}</a></td>
+                <td>
+                    <a *ngIf="document.documentBytes" (click)="openFile(document.documentContentType, document.documentBytes)">open</a>
+                    <span *ngIf="document.documentBytes">{{document.documentContentType}}, {{byteSize(document.documentBytes)}}</span>
+                </td>
+                <td>{{document.extractionStatus}}</td>
+                <td>
+                    {{document.user?.id}}
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['../document', document.id ]"
+                                class="btn btn-info btn-sm">
+                            <span class="fa fa-eye"></span>
+                            <span class="hidden-md-down">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'document/'+ document.id + '/edit'} }]"
+                                replaceUrl="true"
+                                class="btn btn-primary btn-sm">
+                            <span class="fa fa-pencil"></span>
+                            <span class="hidden-md-down">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'document/'+ document.id + '/delete'} }]"
+                                replaceUrl="true"
+                                class="btn btn-danger btn-sm">
+                            <span class="fa fa-remove"></span>
+                            <span class="hidden-md-down">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

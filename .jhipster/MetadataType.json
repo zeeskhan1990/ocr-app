@@ -1,0 +1,16 @@
+{
+    "fluentMethods": true,
+    "relationships": [],
+    "fields": [
+        {
+            "fieldName": "name",
+            "fieldType": "String"
+        }
+    ],
+    "changelogDate": "20170621215116",
+    "javadoc": "A static data entity holding all\npossible metadata type",
+    "entityTableName": "metadata_type",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no"
+}

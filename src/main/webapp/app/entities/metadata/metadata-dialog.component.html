@@ -1,0 +1,55 @@
+<form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
+
+    <div class="modal-header">
+        <h4 class="modal-title" id="myMetadataLabel">Create or edit a Metadata</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                (click)="clear()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <jhi-alert-error></jhi-alert-error>
+        <div class="form-group" [hidden]="!metadata.id">
+            <label for="id">ID</label>
+            <input type="text" class="form-control" id="id" name="id"
+                   [(ngModel)]="metadata.id" readonly />
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" for="field_originalValue">Original Value</label>
+            <input type="text" class="form-control" name="originalValue" id="field_originalValue"
+                [(ngModel)]="metadata.originalValue" required />
+            <div [hidden]="!(editForm.controls.originalValue?.dirty && editForm.controls.originalValue?.invalid)">
+                <small class="form-text text-danger"
+                   [hidden]="!editForm.controls.originalValue?.errors?.required">
+                   This field is required.
+                </small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" for="field_verifiedValue">Verified Value</label>
+            <input type="text" class="form-control" name="verifiedValue" id="field_verifiedValue"
+                [(ngModel)]="metadata.verifiedValue"  />
+        </div>
+
+        <div class="form-group">
+            <label for="field_metadataType">Metadata Type</label>
+            <select class="form-control" id="field_metadataType" name="metadataType" [(ngModel)]="metadata.metadataType">
+                <option [ngValue]="null"></option>
+                <option [ngValue]="metadataTypeOption.id === metadata.metadataType?.id ? metadata.metadataType : metadataTypeOption" *ngFor="let metadataTypeOption of metadatatypes; trackBy: trackMetadataTypeById">{{metadataTypeOption.id}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="field_document">Document</label>
+            <select class="form-control" id="field_document" name="document" [(ngModel)]="metadata.document" >
+                <option [ngValue]="null"></option>
+                <option [ngValue]="documentOption.id === metadata.document?.id ? metadata.document : documentOption" *ngFor="let documentOption of documents; trackBy: trackDocumentById">{{documentOption.id}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" (click)="clear()">
+            <span class="fa fa-ban"></span>&nbsp;<span>Cancel</span>
+        </button>
+        <button type="submit" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
+            <span class="fa fa-save"></span>&nbsp;<span>Save</span>
+        </button>
+    </div>
+</form>

@@ -1,0 +1,38 @@
+{
+    "fluentMethods": true,
+    "relationships": [
+        {
+            "relationshipType": "one-to-one",
+            "relationshipName": "metadataType",
+            "otherEntityName": "metadataType",
+            "otherEntityField": "id",
+            "ownerSide": true,
+            "otherEntityRelationshipName": "metadata"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "document",
+            "otherEntityName": "document",
+            "otherEntityField": "id"
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "originalValue",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "verifiedValue",
+            "fieldType": "String"
+        }
+    ],
+    "changelogDate": "20170621215117",
+    "javadoc": "Metadata entity meant to store all the extracted data\npoints from a document",
+    "entityTableName": "metadata",
+    "dto": "no",
+    "pagination": "no",
+    "service": "serviceImpl"
+}

@@ -1,0 +1,38 @@
+{
+    "fluentMethods": true,
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "metadata",
+            "otherEntityName": "metadata",
+            "otherEntityRelationshipName": "document"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "user",
+            "otherEntityName": "user",
+            "otherEntityField": "id"
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "documentBytes",
+            "fieldType": "byte[]",
+            "fieldTypeBlobContent": "any",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "extractionStatus",
+            "fieldType": "ExtractionStatus",
+            "fieldValues": "PENDING,VERIFIED"
+        }
+    ],
+    "changelogDate": "20170621215115",
+    "javadoc": "Documents entity to store each individual\ndocument that is being processed",
+    "entityTableName": "document",
+    "dto": "no",
+    "pagination": "no",
+    "service": "serviceImpl"
+}
