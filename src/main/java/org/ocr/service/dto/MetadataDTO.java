@@ -20,7 +20,7 @@ public class MetadataDTO {
     private String verifiedValue;
 
     @NotNull(groups = {Create.class, Update.class})
-    private String metadataType;
+    private MetadataTypeDTO metadataTypeDTO;
 
     @NotNull(groups = {Create.class, Update.class})
     private Long documentId;
@@ -31,14 +31,15 @@ public class MetadataDTO {
 
     public MetadataDTO(Metadata metadata) {
         this(metadata.getId(), metadata.getOriginalValue(), metadata.getVerifiedValue(),
-            metadata.getMetadataType().getName(), metadata.getDocument().getId());
+            new MetadataTypeDTO(metadata.getMetadataType().getId(), metadata.getMetadataType().getName()),
+            metadata.getDocument().getId());
     }
 
-    public MetadataDTO(Long id, String originalValue, String verifiedValue, String metadataName, Long documentId) {
+    public MetadataDTO(Long id, String originalValue, String verifiedValue, MetadataTypeDTO metadataTypeDTO, Long documentId) {
         this.id = id;
         this.originalValue = originalValue;
         this.verifiedValue = verifiedValue;
-        this.metadataType = metadataName;
+        this.metadataTypeDTO = metadataTypeDTO;
         this.documentId = documentId;
     }
 
@@ -66,12 +67,12 @@ public class MetadataDTO {
         this.verifiedValue = verifiedValue;
     }
 
-    public String getMetadataType() {
-        return metadataType;
+    public MetadataTypeDTO getMetadataTypeDTO() {
+        return metadataTypeDTO;
     }
 
-    public void setMetadataType(String metadataType) {
-        this.metadataType = metadataType;
+    public void setMetadataTypeDTO(MetadataTypeDTO metadataTypeDTO) {
+        this.metadataTypeDTO = metadataTypeDTO;
     }
 
     public Long getDocumentId() {
@@ -88,7 +89,7 @@ public class MetadataDTO {
             "id=" + id +
             ", originalValue='" + originalValue + '\'' +
             ", verifiedValue='" + verifiedValue + '\'' +
-            ", metadataType='" + metadataType + '\'' +
+            ", metadataTypeDTO='" + metadataTypeDTO + '\'' +
             ", documentId=" + documentId +
             '}';
     }

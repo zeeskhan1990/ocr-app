@@ -14,7 +14,7 @@ public class DocumentDTO {
 
     private Long id;
 
-    @NotNull(groups = {Update.class})
+    @NotNull(groups = {Create.class, Update.class})
     private byte[] documentBytes;
 
     private String documentContentType;

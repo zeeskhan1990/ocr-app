@@ -1,10 +1,14 @@
 package org.ocr.service;
 
 import org.ocr.domain.Document;
+import org.ocr.domain.Metadata;
+import org.ocr.service.dto.MetadataDTO;
 import org.springframework.security.access.method.P;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service Interface for managing Document.
@@ -17,8 +21,7 @@ public interface DocumentService {
      * @param document the entity to save
      * @return the persisted entity
      */
-    @PreAuthorize("#doc.user.login == principal.username or doc.id==null")
-    Document save(@P("doc") Document document);
+    Document save(Document document);
 
     /**
      *  Get all the documents.
@@ -33,7 +36,7 @@ public interface DocumentService {
      *  @param id the id of the entity
      *  @return the entity
      */
-    //@PreAuthorize("#id == principal.username") --- Not being able to retrieve the user Id
+    @PostAuthorize("returnObject.user.login == principal.username")
     Document findOne(Long id);
 
     /**
@@ -41,6 +44,10 @@ public interface DocumentService {
      *
      *  @param id the id of the entity
      */
-    //@PreAuthorize("#id == principal.username") --- Not being able to retrieve the user Id
+    @PostAuthorize("returnObject.user.login == principal.username")
     void delete(Long id);
+
+    Set<Metadata> createMetadataForDocument(Document document);
+
+    Set<Metadata> updateMetadataForDocument(Set<Metadata> metadatas);
 }

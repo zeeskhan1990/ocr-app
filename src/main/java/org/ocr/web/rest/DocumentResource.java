@@ -2,6 +2,7 @@ package org.ocr.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.modelmapper.spi.MatchingStrategy;
 import org.ocr.domain.Document;
@@ -25,6 +26,8 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for managing Document.
@@ -44,7 +47,6 @@ public class DocumentResource {
     public DocumentResource(DocumentService documentService, ModelMapper modelMapper) {
         this.documentService = documentService;
         this.modelMapper = modelMapper;
-        this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
     }
 
     /**
@@ -56,17 +58,35 @@ public class DocumentResource {
      */
     @PostMapping("/documents")
     @Timed
-    public ResponseEntity<DocumentDTO> createDocuments(@RequestBody DocumentDTO documentDTO) throws URISyntaxException {
+    public ResponseEntity<DocumentDTO> createDocuments(@Validated(Create.class) @RequestBody DocumentDTO documentDTO) throws URISyntaxException {
         log.debug("REST request to save Document : {}", documentDTO);
         if (documentDTO.getId() != null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new documents cannot already have an ID")).body(null);
         }
         Document savedDocument = documentService.save(convertDocumentDTOToEntity(documentDTO));
 
-        //savedDocument
         DocumentDTO result = convertDocumentToDTO(savedDocument);
         return ResponseEntity.created(new URI("/api/documents/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    @PostMapping("/documents/{documentId}/metadata")
+    @Timed
+    public ResponseEntity<Set<MetadataDTO>> createMetadata(@PathVariable Long documentId) throws URISyntaxException {
+        log.debug("REST request to createMetada : {}", documentId);
+        Document document = documentService.findOne(documentId);
+        if (document.getMetadatas() != null) {
+            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "metadataexists", "Cannot create metadata when it's already present")).body(null);
+        }
+        Set<Metadata> metadatas = documentService.createMetadataForDocument(document);
+
+        Set<MetadataDTO> result = metadatas.stream()
+            .map(metadata -> convertMetadataToDTO(metadata))
+            .collect(Collectors.toSet());
+
+        return ResponseEntity.created(new URI("/api/documents/" + documentId))
+            .headers(HeaderUtil.createAlert("A new set of metadata has been generated for the document" + documentId, result.stream().toString()))
             .body(result);
     }
 
@@ -79,13 +99,11 @@ public class DocumentResource {
      * or with status 500 (Internal Server Error) if the document couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping("/documents")
+    @PutMapping("/documents/{id}")
     @Timed
-    public ResponseEntity<DocumentDTO> updateDocuments(@Validated(Update.class) @RequestBody DocumentDTO documentDTO) throws URISyntaxException {
+    public ResponseEntity<DocumentDTO> updateDocuments(@Validated(Update.class) @RequestBody DocumentDTO documentDTO, @PathVariable Long id) throws URISyntaxException {
         log.debug("REST request to update Document : {}", documentDTO);
-        if (documentDTO.getId() == null) {
-            return createDocuments(documentDTO);
-        }
+        documentDTO.setId(id);
         Document updatedDocument = documentService.save(convertDocumentDTOToEntity(documentDTO));
         DocumentDTO result = convertDocumentToDTO(updatedDocument);
         return ResponseEntity.ok()
@@ -93,7 +111,23 @@ public class DocumentResource {
             .body(result);
     }
 
+    @PutMapping("/documents/{documentId}/metadata")
+    @Timed
+    public ResponseEntity<Set<MetadataDTO>> updateMetadataForDocument(@RequestBody Set<MetadataDTO> metadataDTOS, @PathVariable Long documentId) throws URISyntaxException {
+        log.debug("REST request to update Metadata for document : {}", documentId);
 
+        Set<Metadata> metadatas = metadataDTOS.stream()
+            .map(metadataDTO -> convertMetadataDTOToEntity(metadataDTO))
+            .collect(Collectors.toSet());
+
+        Set<MetadataDTO> result = documentService.updateMetadataForDocument(metadatas)
+            .stream().map(metadata -> convertMetadataToDTO(metadata))
+            .collect(Collectors.toSet());
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createAlert("Metadata has been updated and the document has been marked as verified", result.stream().toString()))
+            .body(result);
+    }
 
     /**
      * GET  /documents : get all the documents.
@@ -102,9 +136,11 @@ public class DocumentResource {
      */
     @GetMapping("/documents")
     @Timed
-    public List<Document> getAllDocuments() {
+    public List<DocumentDTO> getAllDocuments() {
         log.debug("REST request to get all Documents");
-        return documentService.findAll();
+        return documentService.findAll().stream()
+            .map(document -> convertDocumentToDTO(document))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -115,10 +151,10 @@ public class DocumentResource {
      */
     @GetMapping("/documents/{id}")
     @Timed
-    public ResponseEntity<Document> getDocument(@PathVariable Long id) {
+    public ResponseEntity<DocumentDTO> getDocument(@PathVariable Long id) {
         log.debug("REST request to get Document : {}", id);
         Document document = documentService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(document));
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(convertDocumentToDTO(document, true)));
     }
 
     /**
@@ -135,11 +171,15 @@ public class DocumentResource {
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
+    private DocumentDTO convertDocumentToDTO(Document document, boolean restoreBytes) {
+        DocumentDTO mappedDTO = modelMapper.map(document, DocumentDTO.class);
+        if (!restoreBytes)
+            mappedDTO.setDocumentBytes(null);
+        return mappedDTO;
+    }
+
     private DocumentDTO convertDocumentToDTO(Document document) {
-        DocumentDTO documentDTO = modelMapper.map(document, DocumentDTO.class);
-//        documentDTO.formatCreationDate(document.getCreationDate());
-//        documentDTO.formatUpdationDate(document.getUpdationDate());
-        return documentDTO;
+        return convertDocumentToDTO(document, false);
     }
 
     private Document convertDocumentDTOToEntity(DocumentDTO documentDTO) {

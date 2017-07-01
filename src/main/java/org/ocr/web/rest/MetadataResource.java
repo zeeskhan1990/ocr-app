@@ -4,10 +4,12 @@ import com.codahale.metrics.annotation.Timed;
 import org.modelmapper.ModelMapper;
 import org.ocr.domain.Metadata;
 import org.ocr.service.MetadataService;
+import org.ocr.service.dto.MetadataDTO;
 import org.ocr.web.rest.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +19,7 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for managing Metadata.
@@ -61,22 +64,21 @@ public class MetadataResource {
     /**
      * PUT  /metadata : Updates an existing metadata.
      *
-     * @param metadata the metadata to update
+     * @param metadataDTO the metadata to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated metadata,
      * or with status 400 (Bad Request) if the metadata is not valid,
      * or with status 500 (Internal Server Error) if the metadata couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping("/metadata")
+    @PutMapping("/metadata/{id}")
     @Timed
-    public ResponseEntity<Metadata> updateMetadata(@Valid @RequestBody Metadata metadata) throws URISyntaxException {
-        log.debug("REST request to update Metadata : {}", metadata);
-        if (metadata.getId() == null) {
-            return createMetadata(metadata);
-        }
-        Metadata result = metadataService.save(metadata);
+    public ResponseEntity<MetadataDTO> updateMetadata(@Valid @RequestBody MetadataDTO metadataDTO, @PathVariable Long id) throws URISyntaxException {
+        log.debug("REST request to update Metadata : {}", metadataDTO);
+        metadataDTO.setId(id);
+        Metadata updatedMetadata = metadataService.save(convertMetadataDTOToEntity(metadataDTO));
+        MetadataDTO result = convertMetadataToDTO(updatedMetadata);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, metadata.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, metadataDTO.getId().toString()))
             .body(result);
     }
 
@@ -87,9 +89,11 @@ public class MetadataResource {
      */
     @GetMapping("/metadata")
     @Timed
-    public List<Metadata> getAllMetadata() {
+    public List<MetadataDTO> getAllMetadata() {
         log.debug("REST request to get all Metadata");
-        return metadataService.findAll();
+        return metadataService.findAll()
+            .stream().map(metadata -> convertMetadataToDTO(metadata))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -100,10 +104,10 @@ public class MetadataResource {
      */
     @GetMapping("/metadata/{id}")
     @Timed
-    public ResponseEntity<Metadata> getMetadata(@PathVariable Long id) {
+    public ResponseEntity<MetadataDTO> getMetadata(@PathVariable Long id) {
         log.debug("REST request to get Metadata : {}", id);
         Metadata metadata = metadataService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(metadata));
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(convertMetadataToDTO(metadata)));
     }
 
     /**
@@ -117,6 +121,14 @@ public class MetadataResource {
     public ResponseEntity<Void> deleteMetadata(@PathVariable Long id) {
         log.debug("REST request to delete Metadata : {}", id);
         metadataService.delete(id);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
+
+    private MetadataDTO convertMetadataToDTO(Metadata metadata) {
+        return modelMapper.map(metadata, MetadataDTO.class);
+    }
+
+    private Metadata convertMetadataDTOToEntity(MetadataDTO metadataDTO) {
+        return modelMapper.map(metadataDTO, Metadata.class);
     }
 }

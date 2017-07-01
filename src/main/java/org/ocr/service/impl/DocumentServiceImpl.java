@@ -11,6 +11,7 @@ import org.ocr.domain.Document;
 import org.ocr.repository.DocumentRepository;
 import org.ocr.service.MetadataService;
 import org.ocr.service.UserService;
+import org.ocr.service.dto.MetadataDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing Document.
@@ -53,39 +55,23 @@ public class DocumentServiceImpl implements DocumentService{
      */
     @Override
     public Document save(Document document) {
-        //log.debug("Request to save Document : {}", document);
-//        if(document.getId() != null) {
-//            //documentRepository
-//        }
-
-        document.setUser(userService.getUserWithAuthorities());
+        log.debug("Request to save Document : {}", document);
+        /*
+        * Check to see if the request is for updating the document.
+        * If it is for updating, then it is being checked if the
+        * document belongs to the current user, if it's not then
+        * findOne will thrown an AccessDeniedException
+        * */
+        if(document.getId() != null) {
+            findOne(document.getId());
+        }
         if(document.getDocumentContentType() == null) {
             document.setDocumentContentType(Constants.DEFAULT_CONTENT_TYPE);
         }
+        document.setUser(userService.getUserWithAuthorities());
         Document savedDocument = documentRepository.save(document);
 
-        String extractedMetadataStr = extractMetadataFromSampleService(savedDocument.getDocumentBytes(),
-            savedDocument.getDocumentContentType());
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> extractedMap = new HashMap<String, String>();
-        Set<Metadata> metadataSet = new HashSet<>();
-        try {
-            extractedMap = objectMapper.readValue(extractedMetadataStr, new TypeReference<Map<String, String>>(){});
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        extractedMap.forEach((metadataTypeId, originalValue) -> {
-            Metadata metadata =  new Metadata();
-            metadata.setMetadataType(metadataTypeRepository.findOne(Long.parseLong(metadataTypeId)));
-            metadata.setOriginalValue(originalValue);
-            metadata.setDocument(document);
-            metadata = metadataService.save(metadata);
-            metadataSet.add(metadata);
-        });
-
-        savedDocument.setMetadatas(metadataSet);
-        return documentRepository.save(savedDocument);
+        return savedDocument;
     }
 
     /**
@@ -124,6 +110,41 @@ public class DocumentServiceImpl implements DocumentService{
         documentRepository.delete(id);
     }
 
+    @Override
+    public Set<Metadata> createMetadataForDocument(Document document) {
+        String extractedMetadataStr = extractMetadataFromSampleService(document.getDocumentBytes(),
+            document.getDocumentContentType());
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> extractedMap = new HashMap<String, String>();
+        Set<Metadata> metadataSet = new HashSet<>();
+
+        try {
+            extractedMap = objectMapper.readValue(extractedMetadataStr, new TypeReference<Map<String, String>>(){});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        extractedMap.forEach((metadataTypeId, originalValue) -> {
+            Metadata metadata =  new Metadata();
+            metadata.setMetadataType(metadataTypeRepository.findOne(Long.parseLong(metadataTypeId)));
+            metadata.setOriginalValue(originalValue);
+            metadata.setDocument(document);
+            metadata = metadataService.save(metadata);
+            metadataSet.add(metadata);
+        });
+
+        document.setMetadatas(metadataSet);
+        Document updatedDocument = save(document);
+        return updatedDocument.getMetadatas();
+    }
+
+    @Override
+    public Set<Metadata> updateMetadataForDocument(Set<Metadata> metadatas) {
+        return metadatas.stream()
+            .map(metadata -> updateMetadata(metadata))
+            .collect(Collectors.toSet());
+    }
+
     private String extractMetadataFromSampleService(byte[] document, String documentContentType) {
         Map<String,String> map = new HashMap<>();
         map.put("1","John");
@@ -135,5 +156,9 @@ public class DocumentServiceImpl implements DocumentService{
             e.printStackTrace();
         }
         return mapAsJson;
+    }
+
+    private Metadata updateMetadata(Metadata metadata) {
+        return metadataService.save(metadata);
     }
 }
